@@ -32,6 +32,10 @@ function handleOptionSelect(categoryKey, optionId) {
         promptText: option.promptText,
         isCustom:   false,
       };
+      // GA4 — 어떤 카테고리/옵션이 많이 선택되는지 추적
+      if (typeof trackEvent === 'function') {
+        trackEvent('option_select', { category: categoryKey, option: option.id });
+      }
     }
     // 직접 입력 필드 초기화 (카드 선택으로 덮어씀)
     const customInput = document.getElementById(`custom-${categoryKey}`);
@@ -202,6 +206,15 @@ function initEventListeners() {
         textarea.select();
         document.execCommand('copy');
         document.body.removeChild(textarea);
+      }
+
+      // GA4 — 복사 완료 이벤트 (실제 사용 전환 지표)
+      if (typeof trackEvent === 'function') {
+        const state = StateManager.getState();
+        trackEvent('prompt_copy', {
+          selected_ai:    state.selectedAI,
+          selected_count: Object.values(state.selections).filter(Boolean).length,
+        });
       }
 
       // 복사 성공 UI 피드백
