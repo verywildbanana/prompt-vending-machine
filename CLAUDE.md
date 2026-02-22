@@ -59,9 +59,9 @@ js/
 ### 2. 피드백 폼 연결 (Google Forms)
 1. Google Forms에서 폼 생성
 2. 우측 상단 전송 → 링크 복사
-3. `index.html`에서 아래 부분 URL 교체:
-```html
-<a class="feedback-btn" href="여기에_폼_URL" ...>
+3. `index.html`에서 아래 부분 URL 교체 (현재 연결된 폼):
+```
+https://docs.google.com/forms/d/e/1FAIpQLSc4yZVeuf_SIhXoxydXaKyFyC2XE_U6F_ntr5EdzTzk0LDiOg/viewform
 ```
 
 ### 3. 배포 (변경사항 반영)
