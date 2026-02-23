@@ -247,6 +247,36 @@ const Renderer = {
     }, duration);
   },
 
+  // ── 도메인 템플릿 카드 렌더링 ────────────────────────────────
+  // domain: DOMAIN_STOCK 또는 DOMAIN_DEV (domains.js 전역 상수)
+  // 수정 시: 도메인 카드 레이아웃/내용 바꾸고 싶을 때만 이 메서드 수정
+  // ──────────────────────────────────────────────────────────────
+  renderDomainTemplates(domain) {
+    const grid = document.getElementById('domain-grid');
+    if (!grid) return;
+
+    // 기존 카드 제거
+    grid.innerHTML = '';
+
+    domain.templates.forEach(tpl => {
+      // 카드 요소 생성
+      const card = document.createElement('div');
+      card.className = 'domain-card';
+      card.setAttribute('role', 'button');
+      card.setAttribute('tabindex', '0');
+      card.setAttribute('aria-label', tpl.label + ': ' + tpl.description);
+      card.dataset.domainId = tpl.id;
+
+      // 하드코딩 데이터(categories.js/domains.js 상수)이므로 innerHTML 사용 가능
+      card.innerHTML =
+        '<span class="domain-card-icon" aria-hidden="true">' + tpl.icon + '</span>' +
+        '<span class="domain-card-label">' + tpl.label + '</span>' +
+        '<span class="domain-card-desc">' + tpl.description + '</span>';
+
+      grid.appendChild(card);
+    });
+  },
+
   // ── 전체 UI 초기화 ────────────────────────────────────────────
   // 모든 선택, 배지, 진행 바를 초기 상태로 되돌림
   // ──────────────────────────────────────────────────────────────

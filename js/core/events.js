@@ -130,6 +130,65 @@ function initEventListeners() {
     handleOptionSelect(card.dataset.category, card.dataset.optionId);
   });
 
+  // ── 도메인 템플릿 카드 클릭 — document 레벨 이벤트 위임 ──────
+  // renderDomainTemplates()가 탭 전환 시 카드를 재생성해도 리스너 1개 유지
+  // 클릭 시 해당 AI의 promptText를 미리보기에 직접 주입
+  document.addEventListener('click', (e) => {
+    const domainCard = e.target.closest('.domain-card');
+    if (!domainCard) return;
+
+    const tplId = domainCard.dataset.domainId;
+    // 모든 도메인 템플릿에서 해당 ID 탐색
+    const allTemplates = [
+      ...(DOMAIN_STOCK ? DOMAIN_STOCK.templates : []),
+      ...(DOMAIN_DEV   ? DOMAIN_DEV.templates   : []),
+    ];
+    const tpl = allTemplates.find(t => t.id === tplId);
+    if (!tpl) return;
+
+    // 현재 선택된 AI의 프롬프트 텍스트를 상태에 저장하고 미리보기 갱신
+    const ai = AppState.selectedAI;
+    const promptText = tpl.promptText[ai] || '';
+    StateManager.update(s => {
+      s.generatedPrompt = promptText;
+    });
+    Renderer.updatePreview(promptText);
+
+    // 선택 카드 하이라이트 (기존 active 제거 후 현재 카드에 추가)
+    document.querySelectorAll('.domain-card').forEach(c => {
+      c.classList.remove('active');
+      c.setAttribute('aria-pressed', 'false');
+    });
+    domainCard.classList.add('active');
+    domainCard.setAttribute('aria-pressed', 'true');
+
+    // GA4 커스텀 이벤트 (trackEvent는 index.html 인라인 함수)
+    if (typeof trackEvent === 'function') {
+      trackEvent('domain_template_select', { template_id: tplId, ai });
+    }
+  });
+
+  // ── 도메인 탭 전환 (주식 ↔ 개발) ────────────────────────────
+  // querySelectorAll 시점에 DOM이 이미 존재하므로 직접 등록
+  document.querySelectorAll('.domain-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const domainKey = tab.dataset.domain;
+      const domain = domainKey === 'stock' ? DOMAIN_STOCK : DOMAIN_DEV;
+      if (!domain) return;
+
+      // 탭 활성화 표시
+      document.querySelectorAll('.domain-tab').forEach(t => {
+        t.classList.remove('active');
+        t.setAttribute('aria-selected', 'false');
+      });
+      tab.classList.add('active');
+      tab.setAttribute('aria-selected', 'true');
+
+      // 해당 도메인 카드 재렌더링
+      Renderer.renderDomainTemplates(domain);
+    });
+  });
+
   // ── AI 탭 전환 ──────────────────────────────────────────────
   document.querySelectorAll('.ai-tab').forEach(tab => {
     tab.addEventListener('click', () => {

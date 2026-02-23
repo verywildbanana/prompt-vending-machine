@@ -5,12 +5,13 @@
 //
 // 모듈 초기화 순서 (index.html의 스크립트 로드 순서와 일치):
 //   1. categories.js  → CATEGORIES_DATA
-//   2. state.js       → AppState, StateManager
-//   3. promptBuilder  → PromptBuilder, AI_INFO, QUALITY_HINTS
-//   4. render.js      → Renderer
-//   5. theme.js       → ThemeManager
-//   6. events.js      → handleOptionSelect, initEventListeners
-//   7. app.js         → init() ← 여기서 시작
+//   2. domains.js     → DOMAIN_STOCK, DOMAIN_DEV
+//   3. state.js       → AppState, StateManager
+//   4. promptBuilder  → PromptBuilder, AI_INFO, QUALITY_HINTS
+//   5. render.js      → Renderer
+//   6. theme.js       → ThemeManager
+//   7. events.js      → handleOptionSelect, initEventListeners
+//   8. app.js         → init() ← 여기서 시작
 // ============================================================
 
 // ────────────────────────────────────────────────────────────────
@@ -23,6 +24,11 @@ function init() {
 
   // [2] 카테고리 카드 렌더링 (CATEGORIES_DATA 기반)
   Renderer.renderAllCategories();
+
+  // [2-b] 도메인 템플릿 카드 렌더링 (기본: 주식/투자 도메인)
+  if (typeof DOMAIN_STOCK !== 'undefined') {
+    Renderer.renderDomainTemplates(DOMAIN_STOCK);
+  }
 
   // [3] 이벤트 리스너 등록
   initEventListeners();

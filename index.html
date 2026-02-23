@@ -124,6 +124,26 @@
       </div>
 
       <!-- ════════════════════════════════════
+           ⚡ 빠른 시작 템플릿 (domains.js)
+           ════════════════════════════════════ -->
+      <section class="domain-templates-section" aria-label="빠른 시작 템플릿">
+        <div class="domain-section-header">
+          <span class="domain-section-badge">NEW</span>
+          <h2 class="domain-section-title">⚡ 빠른 시작 템플릿</h2>
+          <p class="domain-section-desc">클릭 한 번으로 전문가 수준의 프롬프트를 바로 사용하세요</p>
+        </div>
+        <!-- 도메인 탭 (주식 / 개발) -->
+        <div class="domain-tabs" role="tablist" aria-label="도메인 선택">
+          <button class="domain-tab active" data-domain="stock"
+                  role="tab" aria-selected="true">💰 주식 / 투자</button>
+          <button class="domain-tab" data-domain="dev"
+                  role="tab" aria-selected="false">💻 개발 / 코딩</button>
+        </div>
+        <!-- 템플릿 카드 그리드 — JS renderDomainTemplates()로 채움 -->
+        <div class="domain-grid" id="domain-grid" role="tabpanel"></div>
+      </section>
+
+      <!-- ════════════════════════════════════
            카테고리 01: 용도 / 목적
            ════════════════════════════════════ -->
       <div class="category-section" data-category="useCase"
@@ -445,6 +465,7 @@
        7. app.js         — 앱 진입점 (초기화 순서 관리)
        ================================================================ -->
   <script src="js/data/categories.js"></script>
+  <script src="js/data/domains.js"></script>
   <script src="js/core/state.js"></script>
   <script src="js/core/promptBuilder.js"></script>
   <script src="js/ui/render.js"></script>
