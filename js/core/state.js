@@ -31,6 +31,11 @@ const AppState = {
 
   // 최종 생성된 프롬프트 문자열
   generatedPrompt: '',
+
+  // 현재 활성화된 도메인 템플릿 (null = 카테고리 모드, 객체 = 도메인 템플릿 모드)
+  // 설정 시: { id, label, icon, description, promptText: {claude, chatgpt, gemini} }
+  // 이 값이 있으면 updateAll()이 카테고리 rebuild를 건너뛰고 이 프롬프트를 사용
+  activeDomainTemplate: null,
 };
 
 // ────────────────────────────────────────────────────────────────

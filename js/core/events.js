@@ -37,9 +37,17 @@ function handleOptionSelect(categoryKey, optionId) {
         trackEvent('option_select', { category: categoryKey, option: option.id });
       }
     }
+    // 카테고리 카드 클릭 → 도메인 템플릿 모드 해제 (카테고리 모드로 전환)
+    s.activeDomainTemplate = null;
     // 직접 입력 필드 초기화 (카드 선택으로 덮어씀)
     const customInput = document.getElementById(`custom-${categoryKey}`);
     if (customInput) customInput.value = '';
+  });
+
+  // 도메인 카드 하이라이트 해제
+  document.querySelectorAll('.domain-card').forEach(c => {
+    c.classList.remove('active');
+    c.setAttribute('aria-pressed', 'false');
   });
 
   // UI 업데이트
@@ -98,12 +106,24 @@ function updateAll({ updateChips = true } = {}) {
   const selectedCount = StateManager.getSelectedCount();
   const qualityScore  = StateManager.getQualityScore();
 
-  // 프롬프트 재생성
-  const prompt = PromptBuilder.generate(
-    state.selectedAI,
-    state.selections,
-    state.userRequest,
-  );
+  // ★ 도메인 템플릿 활성화 여부 확인 ─────────────────────────────
+  // activeDomainTemplate이 설정된 경우:
+  //   - 카테고리 selections를 rebuild하지 않고 템플릿 프롬프트를 그대로 사용
+  //   - textarea 입력(userRequest)이 변해도 도메인 프롬프트 유지
+  // activeDomainTemplate이 null인 경우 (카테고리 모드):
+  //   - 기존대로 PromptBuilder.generate() 실행
+  let prompt;
+  if (state.activeDomainTemplate) {
+    // 도메인 모드: AI 전환 시 해당 AI의 promptText 반환 (재생성 없음)
+    prompt = state.activeDomainTemplate.promptText[state.selectedAI] || '';
+  } else {
+    // 카테고리 모드: 선택된 옵션들로 프롬프트 조합
+    prompt = PromptBuilder.generate(
+      state.selectedAI,
+      state.selections,
+      state.userRequest,
+    );
+  }
 
   // 상태에 저장
   StateManager.update(s => { s.generatedPrompt = prompt; });
@@ -146,10 +166,13 @@ function initEventListeners() {
     const tpl = allTemplates.find(t => t.id === tplId);
     if (!tpl) return;
 
-    // 현재 선택된 AI의 프롬프트 텍스트를 상태에 저장하고 미리보기 갱신
+    // ★ 활성 도메인 템플릿을 상태에 저장 (핵심 버그 수정)
+    // activeDomainTemplate이 설정되면 updateAll()이 이 프롬프트를 유지함
+    // → textarea 입력(userRequest)이 변해도 이 프롬프트가 초기화되지 않음
     const ai = AppState.selectedAI;
     const promptText = tpl.promptText[ai] || '';
     StateManager.update(s => {
+      s.activeDomainTemplate = tpl;  // 전체 템플릿 객체 저장 (AI 전환 시 재사용)
       s.generatedPrompt = promptText;
     });
     Renderer.updatePreview(promptText);

@@ -303,6 +303,13 @@ const Renderer = {
       input.value = '';
     });
 
+    // 도메인 템플릿 선택 해제 (active 카드 하이라이트 제거 + 상태 초기화)
+    document.querySelectorAll('.domain-card').forEach(c => {
+      c.classList.remove('active');
+      c.setAttribute('aria-pressed', 'false');
+    });
+    StateManager.update(s => { s.activeDomainTemplate = null; });
+
     // 진행 바 초기화
     this.updateProgress(0);
 
