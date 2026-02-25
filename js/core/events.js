@@ -114,8 +114,28 @@ function updateAll({ updateChips = true } = {}) {
   //   - 기존대로 PromptBuilder.generate() 실행
   let prompt;
   if (state.activeDomainTemplate) {
-    // 도메인 모드: AI 전환 시 해당 AI의 promptText 반환 (재생성 없음)
-    prompt = state.activeDomainTemplate.promptText[state.selectedAI] || '';
+    // 도메인 모드: 템플릿 원본을 가져온 뒤 userRequest로 플레이스홀더 교체
+    const basePrompt = state.activeDomainTemplate.promptText[state.selectedAI] || '';
+    if (state.userRequest.trim()) {
+      // 템플릿의 마지막 [대괄호 플레이스홀더]를 실제 요청 내용으로 교체
+      // 매칭 대상: [여기에 ...], [이해하고 싶은 ...], [회사명], [레거시 ...] 등
+      // ※ 줄바꿈이 없는 단일 [ ] 패턴만 교체 (여러 플레이스홀더가 있을 경우 마지막 것만)
+      const placeholderRegex = /\[[^\[\]\n]{2,80}\]/g;
+      const matches = basePrompt.match(placeholderRegex);
+      if (matches && matches.length > 0) {
+        // 마지막 플레이스홀더만 교체 (앞에 있는 [회사명] 등은 유지)
+        const lastPlaceholder = matches[matches.length - 1];
+        const lastIdx = basePrompt.lastIndexOf(lastPlaceholder);
+        prompt = basePrompt.slice(0, lastIdx)
+               + state.userRequest.trim()
+               + basePrompt.slice(lastIdx + lastPlaceholder.length);
+      } else {
+        // 플레이스홀더 없으면 끝에 요청 내용 추가
+        prompt = basePrompt + '\n\n' + state.userRequest.trim();
+      }
+    } else {
+      prompt = basePrompt;
+    }
   } else {
     // 카테고리 모드: 선택된 옵션들로 프롬프트 조합
     prompt = PromptBuilder.generate(
