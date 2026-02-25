@@ -158,11 +158,13 @@ function initEventListeners() {
     if (!domainCard) return;
 
     const tplId = domainCard.dataset.domainId;
-    // 모든 도메인 템플릿에서 해당 ID 탐색
-    const allTemplates = [
-      ...(DOMAIN_STOCK ? DOMAIN_STOCK.templates : []),
-      ...(DOMAIN_DEV   ? DOMAIN_DEV.templates   : []),
-    ];
+    // ★ DOMAIN_REGISTRY 기반 — 새 도메인 추가 시 이 코드를 수정하지 않아도 됨
+    const allTemplates = (typeof DOMAIN_REGISTRY !== 'undefined')
+      ? DOMAIN_REGISTRY.flatMap(d => d.templates)
+      : [
+          ...(DOMAIN_STOCK ? DOMAIN_STOCK.templates : []),
+          ...(DOMAIN_DEV   ? DOMAIN_DEV.templates   : []),
+        ];
     const tpl = allTemplates.find(t => t.id === tplId);
     if (!tpl) return;
 
@@ -191,25 +193,31 @@ function initEventListeners() {
     }
   });
 
-  // ── 도메인 탭 전환 (주식 ↔ 개발) ────────────────────────────
-  // querySelectorAll 시점에 DOM이 이미 존재하므로 직접 등록
-  document.querySelectorAll('.domain-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      const domainKey = tab.dataset.domain;
-      const domain = domainKey === 'stock' ? DOMAIN_STOCK : DOMAIN_DEV;
-      if (!domain) return;
+  // ── 도메인 탭 전환 — DOMAIN_REGISTRY 기반 조회 ──────────────
+  // ★ 하드코딩 제거: domainKey → DOMAIN_REGISTRY.find(d => d.id === domainKey)
+  // 새 도메인 추가 시 이 코드를 수정하지 않아도 자동으로 작동함
+  // 탭은 renderDomainTabs()가 동적으로 생성하므로 이벤트 위임 패턴 사용
+  document.addEventListener('click', (e) => {
+    const tab = e.target.closest('.domain-tab');
+    if (!tab) return;
 
-      // 탭 활성화 표시
-      document.querySelectorAll('.domain-tab').forEach(t => {
-        t.classList.remove('active');
-        t.setAttribute('aria-selected', 'false');
-      });
-      tab.classList.add('active');
-      tab.setAttribute('aria-selected', 'true');
+    const domainKey = tab.dataset.domain;
+    // ★ 레지스트리 기반 조회 (하드코딩 if/else 제거)
+    const domain = (typeof DOMAIN_REGISTRY !== 'undefined')
+      ? DOMAIN_REGISTRY.find(d => d.id === domainKey)
+      : (domainKey === 'stock' ? DOMAIN_STOCK : DOMAIN_DEV);
+    if (!domain) return;
 
-      // 해당 도메인 카드 재렌더링
-      Renderer.renderDomainTemplates(domain);
+    // 탭 활성화 표시
+    document.querySelectorAll('.domain-tab').forEach(t => {
+      t.classList.remove('active');
+      t.setAttribute('aria-selected', 'false');
     });
+    tab.classList.add('active');
+    tab.setAttribute('aria-selected', 'true');
+
+    // 해당 도메인 카드 재렌더링
+    Renderer.renderDomainTemplates(domain);
   });
 
   // ── AI 탭 전환 ──────────────────────────────────────────────

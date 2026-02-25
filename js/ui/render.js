@@ -247,8 +247,39 @@ const Renderer = {
     }, duration);
   },
 
+  // ── 도메인 탭 동적 렌더링 ─────────────────────────────────────
+  // input: registry (DOMAIN_REGISTRY 배열 — domains.js 전역 상수)
+  // 역할: DOMAIN_REGISTRY를 읽어 탭 버튼을 자동 생성
+  //       → 새 도메인을 domains.js에 추가하면 탭이 자동 추가됨
+  // 수정 시: 탭 UI 모양/스타일을 바꾸고 싶을 때만 이 메서드 수정
+  // ──────────────────────────────────────────────────────────────
+  renderDomainTabs(registry) {
+    const tabsEl = document.getElementById('domain-tabs');
+    if (!tabsEl || !registry || registry.length === 0) return;
+
+    // 기존 탭 제거 후 재생성
+    tabsEl.innerHTML = '';
+
+    registry.forEach((domain, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'domain-tab' + (i === 0 ? ' active' : '');
+      btn.dataset.domain = domain.id;
+      btn.setAttribute('role', 'tab');
+      btn.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+      btn.setAttribute('type', 'button');
+      btn.setAttribute('aria-label', domain.label + ' 도메인 탭');
+
+      // 하드코딩 데이터이므로 innerHTML 사용 가능
+      btn.innerHTML =
+        '<span class="domain-tab-icon" aria-hidden="true">' + domain.icon + '</span> ' +
+        '<span class="domain-tab-label">' + domain.label + '</span>';
+
+      tabsEl.appendChild(btn);
+    });
+  },
+
   // ── 도메인 템플릿 카드 렌더링 ────────────────────────────────
-  // domain: DOMAIN_STOCK 또는 DOMAIN_DEV (domains.js 전역 상수)
+  // domain: DOMAIN_REGISTRY 배열의 개별 도메인 객체
   // 수정 시: 도메인 카드 레이아웃/내용 바꾸고 싶을 때만 이 메서드 수정
   // ──────────────────────────────────────────────────────────────
   renderDomainTemplates(domain) {
